@@ -23,7 +23,7 @@ def get_weather(place):
         feel_like = w.temperature('celsius')['feels_like']
         status = w.detailed_status
         wind = w.wind()['speed']
-        return ('Сегодня в городе - ' + place + '🏙:\n'
+        return ('Сейчас в населенном пункте - ' + place + '🏙:\n'
                 + '❄️Температура воздуха:' + ' ' + str(temp) + '°.' + '\n'
                 + '🤨 Ощущается как: ' + str(feel_like) + '°.' + '\n'
                 + '✅ Статус: ' + status + '.\n'

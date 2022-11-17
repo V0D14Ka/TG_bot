@@ -19,6 +19,6 @@ class WalletParser:
         dollardata = dollarsoup.findAll("span", {"class": "DFlfde", "class": "SwHCTb", "data-precision": 2})[0].text
         eurodata = eurosoup.findAll("span", {"class": "DFlfde", "class": "SwHCTb", "data-precision": 2})[0].text
         ans = 'Текущий курс валют:\n' \
-              + '🇷🇺 1₽ = ' + dollardata + '$ 🇺🇸\n' \
-              + '🇷🇺 1₽ = ' + eurodata + '€ 🇪🇺'
+              + '🇺🇸 1$ = ' + dollardata + '₽ 🇷🇺\n' \
+              + '🇪🇺 1€ = ' + eurodata + '₽ 🇷🇺'
         return ans
