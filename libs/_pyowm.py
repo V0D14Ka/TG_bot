@@ -1,13 +1,17 @@
+import os
+
 from pyowm import OWM
 from pyowm.commons.exceptions import PyOWMError
 from pyowm.utils.config import get_default_config
+from dotenv import load_dotenv
 
+load_dotenv()
 config_dict = get_default_config()
 config_dict['connection']['use_ssl'] = False
 config_dict['connection']["verify_ssl_certs"] = False
 config_dict['language'] = 'ru'
 
-owm = OWM('c16d779e903477e532485d9034029c6f', config_dict)
+owm = OWM(os.getenv('PYOWM_KEY'), config_dict)
 mgr = owm.weather_manager()
 
 
