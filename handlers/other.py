@@ -1,7 +1,7 @@
 import string
 import json
 from aiogram import types, Dispatcher
-from create_bot import bot
+from create_bot import bot, db
 
 
 async def send(message: types.Message):
