@@ -1,5 +1,5 @@
 from aiogram import types, Dispatcher
-from aiogram.utils.exceptions import BotBlocked, ChatNotFound, MessageCantBeDeleted
+from aiogram.utils.exceptions import BotBlocked, ChatNotFound, MessageCantBeDeleted, CantInitiateConversation
 from create_bot import bot
 from keyboard import kb_client
 from aiogram.types import ReplyKeyboardRemove
@@ -31,8 +31,8 @@ async def commands_start(message: types.Message):
             await message.delete()
         except MessageCantBeDeleted:
             pass
-    except ChatNotFound:
-        await message.reply(messages.chat_not_found)
+    except CantInitiateConversation:
+        await message.reply(messages.cant_initiate_conversation)
     except BotBlocked:
         await message.reply(messages.bot_blocked)
 
@@ -65,19 +65,30 @@ async def history(message: types.Message):
         "day": ('today', 'сегодня'),
         "month": ('month', 'месяц'),
         "year": ('year', 'год'),
+        "*": ('all time', 'все время')
     }
-    if args in (within["day"]):
-        print('сегодня')
-        print(db.get_records(message.from_user.id, "day"))
-    elif args in (within["month"]):
-        print('за месяц')
-        print(db.get_records(message.from_user.id, "month"))
-    elif args in (within["year"]):
-        print('за год')
-        print(db.get_records(message.from_user.id, "year"))
+    records, i = None, None
+    for i in within:
+        if args in within[i]:
+            records = db.get_records(message.from_user.id, i)
+            break
+
+    if records is None:
+        if not args:
+            records = db.get_records(message.from_user.id)
+            i = "*"
+        else:
+            await message.reply("Неккоректно указан период!")
+            return
+
+    if len(records):
+        answer = f"🕘 История операций за {within[i][-1]}\n\n"
+        for r in records:
+            info = "➖ Расход" if not r[2] else "➕ Доход"
+            answer += f"{info} - {r[3]} 🗓{r[4][0:10]}\n"
+        await message.reply(answer)
     else:
-        print('за все время')
-        print(db.get_records(message.from_user.id))
+        await message.reply("Записей не обнаружено!")
 
 
 # Курс валют
