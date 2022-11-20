@@ -37,6 +37,7 @@ async def commands_start(message: types.Message):
         await message.reply(messages.bot_blocked)
 
 
+# Записываем инфу о доходе/ расходе пользователя
 async def record(message: types.Message):
     variants = (('/spent', '/s'), ('/earned', '/e'))
     operation = '-' if message.text.startswith(variants[0]) else '+'
@@ -59,12 +60,13 @@ async def record(message: types.Message):
         await message.reply('Не введена сумма!')
 
 
+# Достаем историю за указанный период
 async def history(message: types.Message):
     args = message.get_args()
     within = {
-        "day": ('today', 'сегодня'),
-        "month": ('month', 'месяц'),
-        "year": ('year', 'год'),
+        "day": ('today', 'day', 'за сегодня', 'сегодня'),
+        "month": ('month', 'за месяц', 'месяц'),
+        "year": ('year', 'за год', 'год'),
         "*": ('all time', 'все время')
     }
     records, i = None, None
