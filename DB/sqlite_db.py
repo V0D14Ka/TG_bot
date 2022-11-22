@@ -5,8 +5,6 @@ class BotDB:
     def __init__(self, db):
         self.base = sqlite3.connect(db)
         self.cur = self.base.cursor()
-        if self.base:
-            print('Data base connected')
         self.base.execute("CREATE TABLE IF NOT EXISTS user("
                           "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                           "user_id INTEGER NOT NULL UNIQUE,"
@@ -16,7 +14,8 @@ class BotDB:
                           "user_id INTEGER NOT NULL REFERENCES user (id) ON DELETE CASCADE,"
                           "operation BOOLEAN NOT NULL,"
                           "amount DECIMAL NOT NULL,"
-                          "operation_date DATETIME NOT NULL DEFAULT ( (DATETIME('now'))) )")
+                          "operation_date DATETIME NOT NULL DEFAULT ( (DATETIME('now'))),"
+                          "category INTEGER NOT NULL DEFAULT 0)")
         self.base.commit()
 
     def add_user(self, user_id):

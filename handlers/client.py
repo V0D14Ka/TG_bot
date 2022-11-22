@@ -47,7 +47,8 @@ async def commands_start(message: types.Message):
 # Записываем инфу о доходе/ расходе пользователя
 async def record(message: types.Message):
     if not db.is_user_exist(message.from_user.id):
-        await message.reply('Дня начала зарегистрируйтесь: /start')
+
+        await message.reply(messages.reg)
         return
     variants = (('/spent', '/s'), ('/earned', '/e'))
     dic = {'-': 'расходе', '+': 'доходе'}
@@ -65,7 +66,7 @@ async def record(message: types.Message):
 # Достаем историю за указанный период
 async def history(message: types.Message):
     if not db.is_user_exist(message.from_user.id):
-        await message.reply('Дня начала зарегистрируйтесь! /start')
+        await message.reply(messages.reg)
         return
     args = message.get_args()
     within = {
@@ -95,7 +96,7 @@ async def history(message: types.Message):
             answer += f"{info} 🗓({r[4][0:10]}) - {r[3]}₽ \n"
         await message.reply(answer)
     else:
-        await message.reply("Записей не обнаружено!")
+        await message.reply(messages.empty_h)
 
 
 # Курс валют
@@ -113,14 +114,17 @@ async def horoscope_start(message: types.Message):
 async def horoscope_next(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['sign'] = message.text.lower()
-        ans = parser.get_horoscope(data['sign'])
-        await message.reply(ans)
+        mesg = await message.reply(messages.waiting_request)
+        await bot.edit_message_text(chat_id=message.chat.id, message_id=mesg.message_id,
+                                    text=parser.get_horoscope(data['sign']))
         await state.finish()
 
 
 async def horoscope(message: types.Message):
     sign = message.text[9:].lower()
-    await message.reply(parser.get_horoscope(sign))
+    mesg = await message.reply(messages.waiting_request)
+    await bot.edit_message_text(chat_id=message.chat.id, message_id=mesg.message_id,
+                                text=parser.get_horoscope(sign))
 
 
 # Погода
