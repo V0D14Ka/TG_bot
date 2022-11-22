@@ -1,1 +1,2 @@
-from . import client, admin, other
+from handlers.client import mainpart, extrapart
+from handlers import admin, other

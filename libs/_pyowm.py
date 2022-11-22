@@ -4,6 +4,7 @@ from pyowm import OWM
 from pyowm.commons.exceptions import PyOWMError
 from pyowm.utils.config import get_default_config
 from dotenv import load_dotenv
+from static import messages
 
 load_dotenv()
 
@@ -27,12 +28,8 @@ class WeatherAPI:
             feel_like = w.temperature('celsius')['feels_like']
             status = w.detailed_status
             wind = w.wind()['speed']
-            return ('Сейчас в населенном пункте - ' + place + '🏙:\n'
-                    + '❄️Температура воздуха:' + ' ' + str(temp) + '°.' + '\n'
-                    + '🤨 Ощущается как: ' + str(feel_like) + '°.' + '\n'
-                    + '✅ Статус: ' + status + '.\n'
-                    + '💨 Порывы ветра достигают: ' + str(wind) + ' м/с.')
+            return messages.weather_info % (place, str(temp), str(feel_like), status, str(wind))
         except PyOWMError:
-            return 'Неккоректный город!😡'
+            return messages.not_a_place
         except:
-            return 'Проблемы с соединением, попробуйте еще раз!'
+            return messages.went_wrong
