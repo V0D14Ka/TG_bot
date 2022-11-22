@@ -29,9 +29,9 @@ class BotDB:
         result = self.cur.execute("SELECT * FROM `user` WHERE `user_id` = ?", (user_id,))
         return bool(len(result.fetchall()))
 
-    def add_record(self, user_id, operation, amount):
-        self.cur.execute("INSERT INTO `record` (`user_id`, `operation`, `amount`) VALUES (?, ?, ?)",
-                         (self.get_user_id(user_id), operation == '+', amount))
+    def add_record(self, user_id, operation, amount, cat=0):
+        self.cur.execute("INSERT INTO `record` (`user_id`, `operation`, `amount`, `category`) VALUES (?, ?, ?, ?)",
+                         (self.get_user_id(user_id), operation == '+', amount, cat))
 
     def get_records(self, _user_id, period="*"):
         match period:

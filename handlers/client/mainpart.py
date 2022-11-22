@@ -1,9 +1,17 @@
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked, Unauthorized, MessageCantBeDeleted, CantInitiateConversation
+from aiogram.types import ReplyKeyboardRemove
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from create_bot import bot
-from keyboard import kb_client
+from keyboard import kb_client, inkb_client
 from create_bot import db
 from static import messages
+
+
+# FSM для записи расхода
+class FSMrecord(StatesGroup):
+    cat = State()
 
 
 # Старт
@@ -32,22 +40,54 @@ async def commands_start(message: types.Message):
 
 
 # Записываем инфу о доходе/ расходе пользователя
-async def record(message: types.Message):
+async def record(message: types.Message, state: FSMContext):
     if not db.is_user_exist(message.from_user.id):
-
         await message.reply(messages.reg)
         return
-    variants = (('/spent', '/s'), ('/earned', '/e'))
-    dic = {'-': 'расходе', '+': 'доходе'}
-    operation = '-' if message.get_command() in variants[0] else '+'
-    amount = message.get_args().replace(',', '.')
-    if not amount.replace('.', '').isdigit():
-        await message.reply(messages.not_a_digit)
-        return
-    amount = round(float(amount), 2)
-    db.add_record(message.from_user.id, operation, amount)
-    db.save()
-    await message.reply(f"Запись о {dic[operation]} успешно внесена!")
+    async with state.proxy() as data:
+        variants = (('/spent', '/s'), ('/earned', '/e'))
+        operation = '-' if message.get_command() in variants[0] else '+'
+        amount = message.get_args().replace(',', '.')
+        if not amount.replace('.', '').isdigit() or amount[0] in "0,.":
+            await message.reply(messages.not_a_digit)
+            return
+        amount = round(float(amount), 2)
+        data['amount'] = amount
+        data['operation'] = operation
+        data['user_id'] = message.from_user.id
+        if operation == '-':
+            await FSMrecord.cat.set()
+            mesg = await message.reply(messages.ask_for_cat, reply_markup=inkb_client)
+            data['mesg'] = mesg
+        else:
+            db.add_record(data['user_id'], data['operation'], data['amount'])
+            db.save()
+            await message.reply(messages.succesful_earned)
+
+
+async def category(callback: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        dic = {
+            '1': 'Транспорт',
+            '2': 'Еда',
+            '3': 'Образование',
+            '4': 'Электроника и техника',
+            '5': 'Бытовые траты',
+            '6': 'Прочее',
+        }
+        data['cat'] = str(callback.data.split('_')[1])
+        if data['cat'] == 'cancel':
+            await callback.answer()
+            await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                        text=messages.cancel, reply_markup=None)
+            await state.finish()
+            return
+        db.add_record(data['user_id'], data['operation'], data['amount'], data['cat'])
+        db.save()
+        await callback.answer()
+        await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                    text=messages.succesful_spent % dic[data['cat']], reply_markup=None)
+        await state.finish()
 
 
 # Достаем историю за указанный период
@@ -88,5 +128,6 @@ async def history(message: types.Message):
 
 def register_handlers_client_main(_dp: Dispatcher):
     _dp.register_message_handler(commands_start, commands=['start', 'help'])
-    _dp.register_message_handler(record, commands=['spent', 's', 'earned', 'e'])
+    _dp.register_message_handler(callback=record, commands=['spent', 's', 'earned', 'e'], state=None)
+    _dp.register_callback_query_handler(callback=category, text_contains='cat_', state=FSMrecord.cat)
     _dp.register_message_handler(history, commands=['history', 'h'])
