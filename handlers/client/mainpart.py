@@ -117,10 +117,21 @@ async def history(message: types.Message):
             return
 
     if len(records):
-        answer = f"🕘 История операций за {within[i][-1]}\n\n"
+        minus = 0
+        plus = 0
+
+        answer = f"🕘 История операций за {within[i][-1]}:\n"
+        ans2 = ""
         for r in records:
-            info = "➖ Расход" if not r[2] else "➕ Доход "
-            answer += f"{info} 🗓({r[4][0:10]}) - {r[3]}₽ \n"
+            if not r[2]:
+                info = "➖ Расход"
+                minus += int(r[3])
+            else:
+                info = "➕ Доход "
+                plus += int(r[3])
+            ans2 += f"{info} 🗓({r[4][0:10]}) - {r[3]}₽ \n"
+        total = '+' if plus > minus else '-'
+        answer += messages.final % (str(minus), str(plus), total, abs(plus-minus)) + ans2
         await message.reply(answer)
     else:
         await message.reply(messages.empty_h)

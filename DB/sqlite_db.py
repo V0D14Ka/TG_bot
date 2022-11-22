@@ -39,22 +39,22 @@ class BotDB:
                 result = self.cur.execute(
                     "SELECT * FROM `record` WHERE `user_id` = ? AND `operation_date` BETWEEN datetime('now', 'start of "
                     "day') AND "
-                    "datetime('now', 'localtime') ORDER BY `operation_date`",
+                    "datetime('now', 'localtime') ORDER BY `operation_date`, `category`",
                     (self.get_user_id(_user_id),))
                 return result.fetchall()
             case "month":
                 return self.cur.execute("SELECT * FROM `record` WHERE `user_id` = ? AND `operation_date` BETWEEN "
                                         "datetime('now', 'start of month') AND datetime('now', 'localtime') "
-                                        "ORDER BY `operation_date`",
+                                        "ORDER BY `operation_date`, `category`",
                                         (self.get_user_id(_user_id), )).fetchall()
             case "year":
                 return self.cur.execute("SELECT * FROM `record` WHERE `user_id` = ? AND `operation_date` BETWEEN "
                                         "datetime('now', 'start of year') AND datetime('now', 'localtime') "
-                                        "ORDER BY `operation_date`",
+                                        "ORDER BY `operation_date`, `category`",
                                         (self.get_user_id(_user_id), )).fetchall()
             case _:
-                return self.cur.execute("SELECT * FROM `record` WHERE `user_id` = ? ORDER BY `operation_date`",
-                                        (self.get_user_id(_user_id), )).fetchall()
+                return self.cur.execute("SELECT * FROM `record` WHERE `user_id` = ? ORDER BY `operation_date` , "
+                                        "`category`", (self.get_user_id(_user_id), )).fetchall()
 
     def save(self):
         return self.base.commit()
