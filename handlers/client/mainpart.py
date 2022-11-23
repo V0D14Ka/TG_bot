@@ -7,6 +7,7 @@ from create_bot import bot
 from keyboard import kb_client, inkb_client
 from create_bot import db
 from static import messages
+from static.dicts import cats_dic, within
 
 
 # FSM для записи расхода
@@ -44,6 +45,7 @@ async def record(message: types.Message, state: FSMContext):
     if not db.is_user_exist(message.from_user.id):
         await message.reply(messages.reg)
         return
+
     async with state.proxy() as data:
         variants = (('/spent', '/s'), ('/earned', '/e'))
         operation = '-' if message.get_command() in variants[0] else '+'
@@ -67,14 +69,6 @@ async def record(message: types.Message, state: FSMContext):
 
 async def category(callback: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
-        dic = {
-            '1': 'Транспорт',
-            '2': 'Еда',
-            '3': 'Образование',
-            '4': 'Электроника и техника',
-            '5': 'Бытовые траты',
-            '6': 'Прочее',
-        }
         data['cat'] = str(callback.data.split('_')[1])
         if data['cat'] == 'cancel':
             await callback.answer()
@@ -86,7 +80,7 @@ async def category(callback: types.CallbackQuery, state: FSMContext):
         db.save()
         await callback.answer()
         await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
-                                    text=messages.succesful_spent % dic[data['cat']], reply_markup=None)
+                                    text=messages.succesful_spent % cats_dic[data['cat']], reply_markup=None)
         await state.finish()
 
 
@@ -96,13 +90,8 @@ async def history(message: types.Message):
         await message.reply(messages.reg)
         return
     args = message.get_args()
-    within = {
-        "day": ('today', 'day', 'за сегодня', 'сегодня'),
-        "month": ('month', 'за месяц', 'месяц'),
-        "year": ('year', 'за год', 'год'),
-        "*": ('all time', 'все время')
-    }
     records, i = None, None
+
     for i in within:
         if args in within[i]:
             records = db.get_records(message.from_user.id, i)
@@ -119,19 +108,22 @@ async def history(message: types.Message):
     if len(records):
         minus = 0
         plus = 0
+        cats = ""
+        arr = [''] * 8
 
-        answer = f"🕘 История операций за {within[i][-1]}:\n"
-        ans2 = ""
         for r in records:
             if not r[2]:
-                info = "➖ Расход"
                 minus += int(r[3])
+                arr[r[5]-1] += f"    🗓({r[4][0:10]}) - {r[3]}₽ \n"
             else:
-                info = "➕ Доход "
                 plus += int(r[3])
-            ans2 += f"{info} 🗓({r[4][0:10]}) - {r[3]}₽ \n"
+
+        for g in range(len(arr)):
+            if arr[g] != '':
+                cats += f"Траты в категории - {cats_dic[str(g+1)]}:\n" + arr[g]
+
         total = '+' if plus > minus else '-'
-        answer += messages.final % (str(minus), str(plus), total, abs(plus-minus)) + ans2
+        answer = messages.final % (within[i][-1], str(plus), str(minus), total, abs(plus-minus)) + cats
         await message.reply(answer)
     else:
         await message.reply(messages.empty_h)

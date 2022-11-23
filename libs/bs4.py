@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from static import messages
+from static.dicts import sign_choices
 
 
 class Parser:
@@ -23,19 +24,6 @@ class Parser:
         return ans
 
     def get_horoscope(self, sign):
-        sign_choices = {"овен": "oven",
-                        "телец": "telets",
-                        "близнецы": "bliznetsi",
-                        "рак": "rac",
-                        "лев": "lev",
-                        "дева": "deva",
-                        "весы": "vesy",
-                        "скорпион": "scorpion",
-                        "стрелец": "strelets",
-                        "козерог": "kozerog",
-                        "водолей": "vodoley",
-                        "рыбы": "riby"
-                        }
         if sign not in sign_choices:
             return messages.not_a_sign
         try:
