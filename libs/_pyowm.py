@@ -6,6 +6,7 @@ from pyowm.utils.config import get_default_config
 from dotenv import load_dotenv
 from static import messages
 
+
 load_dotenv()
 
 
