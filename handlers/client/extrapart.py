@@ -5,7 +5,7 @@ from keyboard import kb_client
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from create_bot import db, parser, weatherAPI
+from create_bot import db, parser, weatherAPI, GPT
 from static import messages
 
 
@@ -65,6 +65,12 @@ async def command_wallet(message: types.Message):
     await bot.edit_message_text(chat_id=message.chat.id, message_id=mesg.message_id, text=parser.get_currency())
 
 
+async def gpt(message: types.Message):
+    mesg = await message.reply(messages.waiting_request)
+    await bot.edit_message_text(chat_id=message.chat.id, message_id=mesg.message_id,
+                                text=GPT.check_gpt(message.get_args()))
+
+
 def register_handlers_client_extra(_dp: Dispatcher):
     # FSM horoscope
     _dp.register_message_handler(horoscope_start, lambda message: message.text.lower() == 'гороскоп', state=None)
@@ -76,3 +82,5 @@ def register_handlers_client_extra(_dp: Dispatcher):
     _dp.register_message_handler(horoscope, lambda message: message.text.lower().startswith('гороскоп '))
     _dp.register_message_handler(weather, lambda message: message.text.lower().startswith('погода '))
     _dp.register_message_handler(command_wallet, lambda message: "курс валют" in message.text.lower())
+    # chatGPT
+    _dp.register_message_handler(gpt, commands=['gpt'])
