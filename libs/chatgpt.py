@@ -13,7 +13,7 @@ class Gpt:
     def check_gpt(self, message: str):
 
         completion = self.client.chat.completions.create(
-            model=self.engine, messages=[{"role": "user", "content": message}]
+            model=self.engine, messages=[{"role": "user", "content": message + ". Напиши по русски."}]
         )
 
         return completion.choices[0].message.content
