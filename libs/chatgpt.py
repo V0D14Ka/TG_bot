@@ -1,17 +1,18 @@
 import os
 
 import openai
-
+from g4f.client import Client
 
 class Gpt:
     engine = "gpt-3.5-turbo"
 
     def __init__(self):
-        openai.api_key = os.getenv("GPT_TOKEN")
+        #openai.api_key = os.getenv("GPT_TOKEN")
+        self.client = Client()
 
     def check_gpt(self, message: str):
 
-        completion = openai.ChatCompletion.create(
+        completion = self.client.chat.completions.create(
             model=self.engine, messages=[{"role": "user", "content": message}]
         )
 
