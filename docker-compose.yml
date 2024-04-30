@@ -12,3 +12,7 @@ services:
       - ./sqlite.db:/TG_bot/sqlite.db
     env_file:
       - ./.env
+    develop:
+      watch:
+        - path: libs/
+          action: sync+restart
